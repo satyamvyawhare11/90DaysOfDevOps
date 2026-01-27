@@ -1,70 +1,114 @@
-Day 04 – Linux Practice (Hand Written)
-System: Linux (Ubuntu)
 
-Process Checks
 
-Command used
-ps aux
+## Day 04 – Linux Practice
+**OS:** Ubuntu Linux
 
-Note
-This command shows all running processes on the system.
+---
 
-Command used
-top
+### Process Commands
 
-Note
-This command shows running processes in real time and CPU usage.
+**Command:**
 
-Service Checks
+```
+ps aux | head
+```
 
-Command used
+**What I saw:**
+This command shows running processes. I saw many system processes. PID 1 was systemd.
+
+---
+
+**Command:**
+
+```
+pgrep sshd
+```
+
+**What I saw:**
+It returned a number. That means ssh service is running.
+
+---
+
+### Service Commands (SSH)
+
+**Command:**
+
+```
 systemctl status ssh
+```
 
-Note
-This shows if the ssh service is running or stopped.
+**What I saw:**
+SSH service was active and running. No error shown.
 
-Command used
-systemctl list-units --type=service
+---
 
-Note
-This shows all services managed by systemd.
+**Command:**
 
-Log Checks
+```
+systemctl list-units --type=service --state=running | head
+```
 
-Command used
-journalctl -u ssh
+**What I saw:**
+Many services were running like ssh and cron.
 
-Note
-This command shows logs related to ssh service.
+---
 
-Command used
-tail -n 50 /var/log/syslog
+### Log Commands
 
-Note
-This shows the last 50 lines of system log.
+**Command:**
 
-Small Troubleshooting Practice
+```
+journalctl -u ssh | tail -n 10
+```
 
-Problem
-ssh service not working
+**What I saw:**
+Some ssh login logs were there. No issue found.
 
-Steps I followed
+---
+
+**Command:**
+
+```
+tail -n 20 /var/log/syslog
+```
+
+**What I saw:**
+System messages and cron logs were shown.
+
+---
+
+### Small Troubleshooting Practice
+
+**Problem:** SSH not working
+
+**Steps I tried:**
+
+```
 systemctl status ssh
-journalctl -u ssh
 sudo systemctl restart ssh
+pgrep sshd
+journalctl -u ssh -xe
+```
 
-Result
-ssh service started working after restart.
+**Result:**
+After restart, ssh was working fine.
 
-What I learned
-ps and top are used to check running processes
-systemctl is used to manage services
-journalctl and tail are used to check logs
+---
 
-Commands practiced today
-ps aux
-top
-systemctl status
-systemctl list-units
-journalctl
-tail
+### What I learned today
+
+* ps shows running processes
+* systemctl is used for services
+* logs help find problems
+
+---
+
+### Commands used today
+
+* ps
+* pgrep
+* systemctl
+* journalctl
+* tail
+
+---
