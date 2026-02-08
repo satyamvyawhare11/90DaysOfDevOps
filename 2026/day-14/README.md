@@ -1,70 +1,165 @@
 # Day 14 – Networking Fundamentals & Hands-on Checks
 
-## Task
-Get comfortable with core networking concepts and the commands you’ll actually run during troubleshooting.
+Today I practiced core Linux networking commands and focused on understanding
+how to diagnose connectivity issues layer by layer, like a DevOps engineer.
 
-You will:
-- Map the **OSI vs TCP/IP models** in your own words
-- Run essential connectivity commands
-- Capture a mini network check for a target host/service
-
-Keep it short, real, and repeatable.
+The goal was not just to run commands, but to interpret what they mean in real systems.
 
 ---
 
-## Expected Output
-- A markdown file: `day-14-networking.md`
-- Screenshots (optional) of key command outputs
+## Quick Concepts
+
+### OSI vs TCP/IP (My Understanding)
+- OSI is a learning model with 7 layers.
+- TCP/IP is the practical implementation used in real systems.
+- Networking issues are solved by identifying the broken layer first.
+
+### Protocol Placement
+- IP → Network layer (addressing & routing)
+- TCP/UDP → Transport layer (delivery)
+- DNS, HTTP/HTTPS, SSH → Application layer
+
+Example:
+Accessing a website uses HTTP (Application) over TCP (Transport) over IP (Network).
 
 ---
 
-## Quick Concepts (write 1–2 bullets each)
-- OSI layers (L1–L7) vs TCP/IP stack (Link, Internet, Transport, Application)
-- Where **IP**, **TCP/UDP**, **HTTP/HTTPS**, **DNS** sit in the stack
-- One real example: “`curl https://example.com` = App layer over TCP over IP”
+## Hands-on Observations
+
+### Identity Check
+Command used:
+- `hostname -I`
+- `ip addr show`
+
+Observation:
+- My EC2 instance has a private IP `172.31.12.41`.
+- Docker bridge network `172.17.0.1` is also present.
+- Confirms the server is connected to the VPC network.
 
 ---
 
-## Hands-on Checklist (run these; add 1–2 line observations)
-- **Identity:** `hostname -I` (or `ip addr show`) — note your IP.
-- **Reachability:** `ping <target>` — mention latency and packet loss.
-- **Path:** `traceroute <target>` (or `tracepath`) — note any long hops/timeouts.
-- **Ports:** `ss -tulpn` (or `netstat -tulpn`) — list one listening service and its port.
-- **Name resolution:** `dig <domain>` or `nslookup <domain>` — record the resolved IP.
-- **HTTP check:** `curl -I <http/https-url>` — note the HTTP status code.
-- **Connections snapshot:** `netstat -an | head` — count ESTABLISHED vs LISTEN (rough).
+### Reachability Check
+Command used:
+- `ping trainwithshubham.com`
+- `ping google.com`
 
-Pick one target service/host (e.g., `google.com`, your lab server, or a local service) and stick to it for ping/traceroute/curl where possible.
+Observation:
+- Both targets responded with **0% packet loss**.
+- Latency was very low (< 1 ms).
+- Confirms network connectivity is healthy.
 
----
-
-## Mini Task: Port Probe & Interpret
-1) Identify one listening port from `ss -tulpn` (e.g., SSH on 22 or a local web app).  
-2) From the same machine, test it: `nc -zv localhost <port>` (or `curl -I http://localhost:<port>`).  
-3) Write one line: is it reachable? If not, what’s the next check? (e.g., service status, firewall).
+Note:
+- Ping failed when domain name was incorrect (DNS-related learning).
 
 ---
 
-## Reflection (add to your markdown)
-- Which command gives you the fastest signal when something is broken?
-- What layer (OSI/TCP-IP) would you inspect next if DNS fails? If HTTP 500 shows up?
-- Two follow-up checks you’d run in a real incident.
+### Path Analysis
+Command used:
+- `traceroute trainwithshubham.com`
+- `tracepath google.com`
+
+Observation:
+- Initial hops responded.
+- Many later hops showed `* * *`.
+- This is common in cloud environments where ICMP is blocked.
+
+Learning:
+- Missing traceroute replies do not always indicate a network failure.
 
 ---
 
-## Submission
-1. Add `day-14-networking.md` to `2026/day-14/`
-2. Commit and push to your fork
+### Ports & Services Check
+Command used:
+- `ss -tulpn`
+- `netstat -tulpn`
+
+Observation:
+- SSH is listening on port 22.
+- Nginx is listening on port 80.
+- A local service is listening on port 8080.
+
+Learning:
+- If a service is not listening on a port, it cannot receive traffic.
 
 ---
 
-## Learn in Public
-Post 2–3 lines on the commands you practiced and one interesting traceroute/curl finding.
+### DNS Resolution
+Command used:
+- `nslookup trainwithshubham.com`
 
-Use hashtags:  
-#90DaysOfDevOps  
-#DevOpsKaJosh  
-#TrainWithShubham
+Observation:
+- Domain resolved to multiple IP addresses.
+- Confirms DNS is working correctly.
+
+Learning:
+- DNS issues can break everything even if the network is up.
+
+---
+
+### HTTP Check
+Command used:
+- `curl -I trainwithshubham.com`
+- `curl -I google.com`
+
+Observation:
+- trainwithshubham.com returned `405 Not Allowed`
+- google.com returned `301 Moved Permanently`
+
+Learning:
+- HTTP errors do not always mean network issues.
+- Application logic and security rules also affect responses.
+
+---
+
+### Connections Snapshot
+Command used:
+- `netstat -an | head`
+
+Observation:
+- SSH connection shown as `ESTABLISHED`.
+- Multiple services in `LISTEN` state.
+
+Learning:
+- Useful for identifying active and stuck connections.
+
+---
+
+## Mini Task – Port Probe
+
+Command used:
+- `nc -zv localhost 80`
+- `nc -zv localhost 22`
+
+Observation:
+- Both ports were reachable locally.
+- Confirms services are running and accepting connections.
+
+Next steps if failed:
+- Check service status
+- Check firewall rules
+- Verify correct port binding
+
+---
+
+## Key Learnings
+
+- Networking troubleshooting must follow layers, not guesswork.
+- Ping checks reachability, not application health.
+- DNS failures can block access even when servers are reachable.
+- Ports must be listening for services to be accessible.
+- Disk issues can indirectly cause networking and package failures.
+
+---
+
+## Reflection
+
+- Fastest signal command: `ping`
+- If DNS fails → investigate Application/DNS layer first
+- If HTTP returns 500 → network is fine, application is the issue
+- Next checks in real incident:
+  - Service status
+  - Logs
+  - Disk usage
 
 Happy Learning  
 **TrainWithShubham**
